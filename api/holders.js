@@ -57,9 +57,9 @@ module.exports = async (req, res) => {
     });
 
     parsed.sort((a, b) => b.amount - a.amount);
-    const top200 = parsed.slice(0, 200);
+    const top400 = parsed.slice(0, 400);
 
-    res.status(200).json(top200);
+    res.status(200).json(top400);
   } catch (err) {
     console.error("查询失败:", err.response?.data || err.message);
     res.status(500).json({ error: "查询失败", detail: err.response?.data || err.message });
