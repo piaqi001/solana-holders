@@ -1,5 +1,19 @@
 
 const axios = require('axios');
+const bs58 = require('bs58');
+
+function decodeBase64ToBuffer(str) {
+  return Buffer.from(str, 'base64');
+}
+
+function readPublicKey(buffer, offset) {
+  return bs58.encode(buffer.slice(offset, offset + 32));
+}
+
+function readAmount(buffer, offset) {
+  // 64-bit unsigned int, little endian
+  return buffer.readBigUInt64LE(offset);
+}
 
 module.exports = async (req, res) => {
   const tokenMint = req.query.token;
@@ -7,7 +21,7 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: '缺少 token 参数' });
   }
 
-  const rpcUrl = "https://api.mainnet-beta.solana.com"; // 使用官方 RPC
+  const rpcUrl = "https://mainnet.helius-rpc.com/?api-key=f9e47385-9354-4ee6-8b39-17cb0326bdc6";
 
   try {
     const response = await axios.post(rpcUrl, {
@@ -17,7 +31,7 @@ module.exports = async (req, res) => {
       params: [
         "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
         {
-          encoding: "jsonParsed",
+          encoding: "base64",
           filters: [
             { dataSize: 165 },
             { memcmp: { offset: 0, bytes: tokenMint } }
@@ -31,19 +45,21 @@ module.exports = async (req, res) => {
     });
 
     const accounts = response.data.result || [];
-
-    const result = accounts.map(account => {
-      const info = account.account?.data?.parsed?.info;
+    const parsed = accounts.map(({ account }) => {
+      const [dataBase64] = account.data;
+      const buffer = decodeBase64ToBuffer(dataBase64);
+      const owner = readPublicKey(buffer, 32);
+      const rawAmount = readAmount(buffer, 64);
       return {
-        wallet: info?.owner || "unknown",
-        amount: info?.tokenAmount?.uiAmount ?? 0
+        wallet: owner,
+        amount: Number(rawAmount) / 1e6 // 默认6位小数
       };
     });
 
-    result.sort((a, b) => b.amount - a.amount);
-    const top = result.slice(0, 200);
+    parsed.sort((a, b) => b.amount - a.amount);
+    const top200 = parsed.slice(0, 200);
 
-    res.status(200).json(top);
+    res.status(200).json(top200);
   } catch (err) {
     console.error("查询失败:", err.response?.data || err.message);
     res.status(500).json({ error: "查询失败", detail: err.response?.data || err.message });
