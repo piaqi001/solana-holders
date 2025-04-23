@@ -8,50 +8,20 @@ module.exports = async (req, res) => {
   }
 
   const apiKey = "f9e47385-9354-4ee6-8b39-17cb0326bdc6";
-  const rpcUrl = `https://mainnet.helius-rpc.com/?api-key=${apiKey}`;
+  const url = `https://api.helius.xyz/v1/token-holders?api-key=${apiKey}&mint=${tokenAddress}&limit=200`;
 
   try {
-    // Step 1: 获取最大持仓的 token accounts
-    const largestAccountsRes = await axios.post(rpcUrl, {
-      jsonrpc: "2.0",
-      id: 1,
-      method: "getTokenLargestAccounts",
-      params: [tokenAddress]
-    }, {
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
+    const response = await axios.get(url);
+    const holders = response.data;
 
-    const tokenAccounts = largestAccountsRes.data.result?.value || [];
+    if (!Array.isArray(holders)) {
+      return res.status(500).json({ error: "返回数据格式不正确", raw: holders });
+    }
 
-    // Step 2: 批量查这些账户的 owner 地址
-    const accountAddresses = tokenAccounts.map(a => a.address);
-    const infoRes = await axios.post(rpcUrl, {
-      jsonrpc: "2.0",
-      id: 2,
-      method: "getMultipleAccounts",
-      params: [
-        accountAddresses,
-        { encoding: "jsonParsed" }
-      ]
-    }, {
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
-
-    const accountInfos = infoRes.data.result?.value || [];
-
-    // Step 3: 返回包含 owner 地址 + 余额
-    const result = tokenAccounts.map((acc, i) => {
-      const owner = accountInfos[i]?.data?.parsed?.info?.owner || "unknown";
-      return {
-        wallet: owner,
-        tokenAccount: acc.address,
-        amount: acc.uiAmountString
-      };
-    });
+    const result = holders.map((item, index) => ({
+      wallet: item.owner,
+      amount: item.amount?.uiAmount ?? 0
+    }));
 
     res.status(200).json(result);
   } catch (err) {
