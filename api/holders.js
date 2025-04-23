@@ -2,24 +2,37 @@
 const axios = require('axios');
 
 module.exports = async (req, res) => {
-  const ownerAddress = req.query.owner;
-  const tokenMint = req.query.token;
-
-  if (!ownerAddress || !tokenMint) {
-    return res.status(400).json({ error: '缺少 owner 或 token 参数' });
+  const tokenAddress = req.query.token;
+  if (!tokenAddress) {
+    return res.status(400).json({ error: '缺少 token 参数' });
   }
 
   const apiKey = "f9e47385-9354-4ee6-8b39-17cb0326bdc6";
-  const url = `https://mainnet.helius-rpc.com/?api-key=${apiKey}`;
+  const rpcUrl = `https://mainnet.helius-rpc.com/?api-key=${apiKey}`;
 
   try {
-    const response = await axios.post(url, {
+    // Step 1: 获取最大持仓的 token accounts
+    const largestAccountsRes = await axios.post(rpcUrl, {
       jsonrpc: "2.0",
       id: 1,
-      method: "getTokenAccountsByOwner",
+      method: "getTokenLargestAccounts",
+      params: [tokenAddress]
+    }, {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    const tokenAccounts = largestAccountsRes.data.result?.value || [];
+
+    // Step 2: 批量查这些账户的 owner 地址
+    const accountAddresses = tokenAccounts.map(a => a.address);
+    const infoRes = await axios.post(rpcUrl, {
+      jsonrpc: "2.0",
+      id: 2,
+      method: "getMultipleAccounts",
       params: [
-        ownerAddress,
-        { mint: tokenMint },
+        accountAddresses,
         { encoding: "jsonParsed" }
       ]
     }, {
@@ -28,16 +41,19 @@ module.exports = async (req, res) => {
       }
     });
 
-    const accounts = response.data.result?.value || [];
-    const balances = accounts.map(account => {
-      const amount = account.account?.data?.parsed?.info?.tokenAmount?.uiAmountString || "0";
+    const accountInfos = infoRes.data.result?.value || [];
+
+    // Step 3: 返回包含 owner 地址 + 余额
+    const result = tokenAccounts.map((acc, i) => {
+      const owner = accountInfos[i]?.data?.parsed?.info?.owner || "unknown";
       return {
-        account: account.pubkey,
-        amount
+        wallet: owner,
+        tokenAccount: acc.address,
+        amount: acc.uiAmountString
       };
     });
 
-    res.status(200).json(balances);
+    res.status(200).json(result);
   } catch (err) {
     console.error("查询失败:", err.response?.data || err.message);
     res.status(500).json({ error: "查询失败", detail: err.response?.data || err.message });
