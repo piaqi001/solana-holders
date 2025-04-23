@@ -1,0 +1,6 @@
+
+{
+  "rewrites": [
+    { "source": "/api/holders", "destination": "/api/holders.js" }
+  ]
+}
