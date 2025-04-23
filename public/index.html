@@ -1,49 +1,57 @@
 
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>Solana 前200持仓查询器</title>
+  <title>Solana 前200持仓地址查询</title>
   <style>
-    body { font-family: sans-serif; max-width: 800px; margin: 2rem auto; }
-    input, button { padding: 0.5rem; font-size: 1rem; }
-    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-    th, td { border: 1px solid #ccc; padding: 0.5rem; }
-    th { background: #eee; }
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    input { padding: 6px; width: 480px; }
+    button { padding: 6px 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+    th { background-color: #f2f2f2; }
+    a { color: blue; text-decoration: underline; }
   </style>
 </head>
 <body>
-  <h1>Solana 前200持仓地址查询</h1>
-  <input id="tokenInput" placeholder="请输入SPL代币地址" style="width:70%" />
+  <h2>Solana 前200持仓地址查询</h2>
+  <input type="text" id="tokenInput" placeholder="输入 Token Mint 地址" value="FtUEW73K6vEYHfbkfpdBZfWpxgQar2HipGdbutEhpump">
   <button onclick="query()">查询</button>
-  <div id="loading" style="margin:1rem 0;"></div>
-  <div id="result"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>排名</th>
+        <th>地址</th>
+        <th>余额</th>
+      </tr>
+    </thead>
+    <tbody id="resultBody"></tbody>
+  </table>
 
   <script>
     async function query() {
       const token = document.getElementById('tokenInput').value.trim();
-      const loading = document.getElementById('loading');
-      const result = document.getElementById('result');
-      loading.innerText = '查询中，请稍候...';
-      result.innerHTML = '';
+      const response = await fetch(`/api/holders?token=${token}`);
+      const data = await response.json();
+      const tbody = document.getElementById('resultBody');
+      tbody.innerHTML = '';
 
-      try {
-        const res = await fetch('/api/holders?token=' + token);
-        const data = await res.json();
-        if (!Array.isArray(data)) throw new Error('返回数据格式不正确');
-
-        let html = '<table><tr><th>排名</th><th>地址</th><th>余额</th></tr>';
-        data.forEach((item, i) => {
-          html += `<tr><td>${i+1}</td><td><a href="https://explorer.solana.com/address/${item.owner}" target="_blank">${item.owner}</a></td><td>${item.amount.toLocaleString()}</td></tr>`;
-        });
-        html += '</table>';
-        result.innerHTML = html;
-      } catch (err) {
-        result.innerHTML = '<p style="color:red">查询失败：' + err.message + '</p>';
-        console.error(err);
-      } finally {
-        loading.innerText = '';
+      if (!Array.isArray(data)) {
+        tbody.innerHTML = '<tr><td colspan="3">查询失败</td></tr>';
+        return;
       }
+
+      data.forEach((item, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td><a href="https://solscan.io/account/${item.wallet}" target="_blank">${item.wallet}</a></td>
+          <td>${item.amount}</td>
+        `;
+        tbody.appendChild(row);
+      });
     }
   </script>
 </body>
