@@ -34,7 +34,6 @@
       document.getElementById('results').appendChild(container);
 
       try {
-        console.log("Fetching:", token);
         const response = await fetch('/api/holders?token=' + token);
         if (!response.ok) throw new Error("网络错误：" + response.status);
         const data = await response.json();
