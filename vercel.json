@@ -1,6 +1,5 @@
-
 {
   "rewrites": [
-    { "source": "/api/holders", "destination": "/api/holders.js" }
+    { "source": "/", "destination": "/index.html" }
   ]
 }
