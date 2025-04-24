@@ -37,7 +37,6 @@
         console.log("Fetching:", token);
         const response = await fetch('/api/holders?token=' + token);
         if (!response.ok) throw new Error("网络错误：" + response.status);
-
         const data = await response.json();
         if (!Array.isArray(data)) throw new Error("返回格式错误");
 
@@ -69,11 +68,12 @@
         document.getElementById('token2').value.trim(),
         document.getElementById('token3').value.trim()
       ].filter(Boolean);
-
       tokens.forEach((token, index) => {
         queryToken(token, index);
       });
     }
+
+    window.queryAll = queryAll;
   </script>
 </body>
 </html>
