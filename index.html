@@ -152,6 +152,8 @@ const addressRemarks = {"Be1wABrhNCprQVep99KurhKJWXfQVNAZ1A5DM21Bi7AM": "八月3
           const totals = calculateTotals(datasets);
   // 将所有地址合并，并统计每个地址在多少个 token 中出现
           const merged = mergeAddresses(datasets);
+        const overlapCount = Object.values(merged).filter(item => item.tokens.length === tokens.length).length;
+        statsDiv.innerHTML = `<p>共有 ${overlapCount} 个地址同时出现在 ${tokens.length} 个代币中（重叠率 ${(overlapCount / allAddresses.length * 100).toFixed(2)}%）</p>`;
   // 设置查询时间为当前时间
           timestamp.textContent = "查询时间：" + new Date().toLocaleString();
 
