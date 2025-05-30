@@ -152,8 +152,16 @@ const addressRemarks = {"Be1wABrhNCprQVep99KurhKJWXfQVNAZ1A5DM21Bi7AM": "八月3
           const totals = calculateTotals(datasets);
   // 将所有地址合并，并统计每个地址在多少个 token 中出现
           const merged = mergeAddresses(datasets);
-        const overlapCount = Object.values(merged).filter(item => item.tokens.length === tokens.length).length;
-        statsDiv.innerHTML = `<p>共有 ${overlapCount} 个地址同时出现在 ${tokens.length} 个代币中（重叠率 ${(overlapCount / allAddresses.length * 100).toFixed(2)}%）</p>`;
+        const overlapAddresses = Object.entries(merged).filter(
+          ([address, item]) => item && Array.isArray(item.tokens) && item.tokens.length === tokens.length
+        );
+        statsDiv.innerHTML = `<p>共有 ${overlapAddresses.length} 个地址同时出现在 ${tokens.length} 个代币中（重叠率 ${(overlapAddresses.length / allAddresses.length * 100).toFixed(2)}%）</p>`;
+        let html = '<table><tr><th>地址</th><th>总持仓</th><th>占比%</th></tr>';
+        overlapAddresses.forEach(([address, item]) => {
+          html += `<tr><td><a href='https://explorer.solana.com/address/${address}' target='_blank'>${address}</a></td><td>${item.total}</td><td>${item.percent.toFixed(2)}</td></tr>`;
+        });
+        html += '</table>';
+        resultDiv.innerHTML = html;
   // 设置查询时间为当前时间
           timestamp.textContent = "查询时间：" + new Date().toLocaleString();
 
