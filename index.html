@@ -215,6 +215,45 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 <!-- 内嵌 JavaScript 代码结束 -->
+</script><script>
+document.addEventListener("DOMContentLoaded", function() {
+  const originalQueryToken = window.queryToken;
+  window.queryToken = async function(token) {
+    const data = await originalQueryToken(token);
+    return data;
+  };
+
+  const originalQueryAll = window.queryAll;
+  window.queryAll = async function() {
+    const tokens = document.querySelectorAll("input[type='text']");
+    const tokenValues = Array.from(tokens).map(input => input.value.trim()).filter(v => v);
+
+    const datasets = await Promise.all(tokenValues.map(queryToken));
+    const addressSets = datasets.map(set => new Set(set.map(item => item.address)));
+
+    let overlapCount = 0;
+    if (addressSets.length === 2) {
+      overlapCount = [...addressSets[0]].filter(addr => addressSets[1].has(addr)).length;
+    } else if (addressSets.length === 3) {
+      overlapCount = [...addressSets[0]].filter(addr => addressSets[1].has(addr) && addressSets[2].has(addr)).length;
+    }
+
+    const existing = document.getElementById("overlap-info");
+    if (existing) existing.remove();
+    if (overlapCount > 0) {
+      const div = document.createElement("div");
+      div.id = "overlap-info";
+      div.style.marginTop = "10px";
+      div.style.fontWeight = "bold";
+      div.textContent = addressSets.length === 2
+        ? "重叠地址数量：" + overlapCount
+        : "三重地址数量：" + overlapCount;
+      document.body.insertBefore(div, document.getElementById("timestamp"));
+    }
+
+    return await originalQueryAll(...arguments);
+  };
+});
 </script></body>
 <!-- HTML 文档结束 -->
 </html>
