@@ -152,6 +152,9 @@ const addressRemarks = {"Be1wABrhNCprQVep99KurhKJWXfQVNAZ1A5DM21Bi7AM": "八月3
           const totals = calculateTotals(datasets);
   // 将所有地址合并，并统计每个地址在多少个 token 中出现
           const merged = mergeAddresses(datasets);
+      Object.values(merged).forEach(item => {
+        item.percent = totalAll > 0 ? (item.total / totalAll * 100) : 0;
+      });
   // 设置查询时间为当前时间
           timestamp.textContent = "查询时间：" + new Date().toLocaleString();
 
