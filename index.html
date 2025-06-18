@@ -31,7 +31,13 @@
 <!-- 页面内嵌 JavaScript 代码开始 -->
 </head>
 <!-- 网页主体开始 -->
-<body><button id="exportButton">导出结果为 Excel</button>
+<body>
+<div id="exportButtons">
+<button onclick="exportTableToExcel(0)">导出代币1</button>
+<button onclick="exportTableToExcel(1)">导出代币2</button>
+<button onclick="exportTableToExcel(2)">导出代币3</button>
+</div>
+
 <h2>
    Solana 多代币前 400 持仓地址查询
   </h2>
@@ -290,29 +296,30 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 <script>
-function exportTablesToExcel() {
+function exportTableToExcel(index) {
   const tables = document.querySelectorAll("table");
-  if (tables.length === 0) {
-    alert("无表格可导出！");
+  const headers = document.querySelectorAll("h3");
+  const inputs = document.querySelectorAll("input.token-input");
+  const tokenAddress = inputs[index] ? inputs[index].value : "未知代币地址";
+
+  if (!tables[index]) {
+    alert("未找到指定的表格！");
     return;
   }
 
+  const now = new Date().toLocaleString();
   let html = `<html><head><meta charset='UTF-8'></head><body>`;
-  html += `<h2>导出时间：${new Date().toLocaleString()}</h2>`;
-
-  tables.forEach((table, i) => {
-    html += `<h3>表格 ${i + 1}</h3>`;
-    html += table.outerHTML;
-  });
-
+  html += `<p>导出时间：${now}</p>`;
+  html += `<p>代币地址：${tokenAddress}</p>`;
+  html += tables[index].outerHTML;
   html += `</body></html>`;
+
   const blob = new Blob([html], { type: "application/vnd.ms-excel" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "solana-holders-export.xls";
+  a.download = `代币${index + 1}_持仓_${now.replace(/[/: ]/g, "_")}.xls`;
   a.click();
 }
-document.getElementById("exportButton").onclick = exportTablesToExcel;
 </script></body>
 <!-- HTML 文档结束 -->
 </html>
