@@ -162,6 +162,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 
+
 <script>
 window.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("queryButton");
@@ -174,11 +175,9 @@ window.addEventListener("DOMContentLoaded", () => {
     try {
       console.log("按钮点击了，开始查询");
 
-      // 清空旧结果
       const resultsContainer = document.getElementById("results");
       resultsContainer.innerHTML = "";
 
-      // 获取用户输入的代币地址
       const inputs = document.querySelectorAll("input.token-input");
       const tokens = Array.from(inputs).map(i => i.value.trim()).filter(Boolean);
       if (tokens.length === 0) {
@@ -186,18 +185,27 @@ window.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // 查询数据
       const datasets = await Promise.all(tokens.map(token =>
         fetch(`/api/holders?token=${token}`).then(res => res.json())
       ));
 
       const tokenNames = tokens.map((_, i) => "代币" + (i + 1));
-
       const totals = datasets.map(data =>
         data.reduce((acc, holder) => acc + (holder.amount || 0), 0)
       );
 
-      // 渲染每列为表格
+      // 统计每个地址出现的次数
+      const addressMap = {};
+      datasets.forEach((data, i) => {
+        data.forEach(holder => {
+          const address = holder.wallet;
+          if (!addressMap[address]) addressMap[address] = { count: 0, data: {} };
+          addressMap[address].count++;
+          addressMap[address].data["token" + i] = holder;
+        });
+      });
+
+      // 渲染主表格
       tokens.forEach((token, tokenIndex) => {
         const column = document.createElement("div");
         column.className = "token-column";
@@ -222,7 +230,12 @@ window.addEventListener("DOMContentLoaded", () => {
           const percent = ((amount / totals[tokenIndex]) * 100).toFixed(2);
           const remark = (typeof addressRemarks === "object" && addressRemarks[address]) || "";
 
-          html += `<tr>
+          let color = "";
+          const count = addressMap[address]?.count || 0;
+          if (count >= 3) color = " style='color:red'";
+          else if (count === 2) color = " style='color:blue'";
+
+          html += `<tr${color}>
                      <td>${i + 1}</td>
                      <td>${address}</td>
                      <td>${amount}</td>
@@ -236,6 +249,38 @@ window.addEventListener("DOMContentLoaded", () => {
         resultsContainer.appendChild(column);
       });
 
+      // 渲染重复地址表格
+      const overlapDiv = document.createElement("div");
+      overlapDiv.className = "token-column";
+      let overlapHtml = "<h3>重复地址统计</h3>";
+      overlapHtml += `<table border="1" cellpadding="6" cellspacing="0">
+                        <thead>
+                          <tr>
+                            <th>地址</th>
+                            <th>出现次数</th>
+                            <th>代币1数量</th>
+                            <th>代币2数量</th>
+                            <th>代币3数量</th>
+                          </tr>
+                        </thead>
+                        <tbody>`;
+
+      Object.entries(addressMap).forEach(([address, info]) => {
+        if (info.count > 1) {
+          overlapHtml += `<tr>
+            <td>${address}</td>
+            <td>${info.count}</td>
+            <td>${info.data.token0?.amount || "-"}</td>
+            <td>${info.data.token1?.amount || "-"}</td>
+            <td>${info.data.token2?.amount || "-"}</td>
+          </tr>`;
+        }
+      });
+
+      overlapHtml += "</tbody></table>";
+      overlapDiv.innerHTML = overlapHtml;
+      resultsContainer.appendChild(overlapDiv);
+
       alert("查询完成！");
     } catch (e) {
       console.error("查询失败:", e);
@@ -244,6 +289,7 @@ window.addEventListener("DOMContentLoaded", () => {
   };
 });
 </script>
+
 
 
 
