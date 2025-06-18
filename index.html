@@ -325,6 +325,32 @@ document.addEventListener("DOMContentLoaded", function() {
     return await originalQueryAll(...arguments);
   };
 });
-</script></body>
+</script>
+<script>
+document.getElementById("queryButton").onclick = async () => {
+  try {
+    console.log("按钮点击了，开始查询");
+
+    const inputs = document.querySelectorAll("input.token-input");
+    const tokens = Array.from(inputs).map(i => i.value.trim()).filter(Boolean);
+
+    if (tokens.length === 0) {
+      alert("请输入至少一个代币地址！");
+      return;
+    }
+
+    const results = await Promise.all(tokens.map(token =>
+      fetch(`/api/holders?token=${token}`).then(res => res.json())
+    ));
+
+    console.log("查询结果:", results);
+    alert("查询完成！请打开控制台查看结果");
+  } catch (e) {
+    console.error("查询时发生错误:", e);
+    alert("查询失败，请查看控制台日志");
+  }
+};
+</script>
+</body>
 <!-- HTML 文档结束 -->
 </html>
