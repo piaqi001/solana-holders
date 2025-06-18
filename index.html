@@ -163,6 +163,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 
+
 <script>
 window.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("queryButton");
@@ -279,9 +280,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
       overlapHtml += "</tbody></table>";
       overlapDiv.innerHTML = overlapHtml;
-      resultsContainer.appendChild(overlapDiv);
+      document.body.appendChild(overlapDiv);
 
-      alert("查询完成！");
+      
     } catch (e) {
       console.error("查询失败:", e);
       alert("查询失败，请查看控制台日志");
@@ -289,6 +290,7 @@ window.addEventListener("DOMContentLoaded", () => {
   };
 });
 </script>
+
 
 
 
