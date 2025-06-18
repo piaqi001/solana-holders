@@ -158,6 +158,76 @@ window.addEventListener("DOMContentLoaded", () => {
   };
 });
 </script>
+
+<script>
+window.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("queryButton");
+  if (!btn) {
+    console.error("未找到按钮 queryButton");
+    return;
+  }
+
+  btn.onclick = async () => {
+    try {
+      console.log("按钮点击了，开始查询");
+
+      // 清空旧结果
+      const resultsContainer = document.getElementById("results");
+      resultsContainer.innerHTML = "";
+
+      // 获取用户输入的代币地址
+      const inputs = document.querySelectorAll("input.token-input");
+      const tokens = Array.from(inputs).map(i => i.value.trim()).filter(Boolean);
+      if (tokens.length === 0) {
+        alert("请输入至少一个代币地址！");
+        return;
+      }
+
+      // 查询数据和代币名称
+      const datasets = await Promise.all(tokens.map(token =>
+        fetch(`/api/holders?token=${token}`).then(res => res.json())
+      ));
+      const tokenNames = await Promise.all(tokens.map(token =>
+        fetch(`/api/token-name?token=${token}`).then(res => res.text())
+      ));
+
+      // 计算总持仓
+      const totals = datasets.map(data =>
+        data.reduce((acc, holder) => acc + (holder.amount || 0), 0)
+      );
+
+      // 渲染每列
+      tokens.forEach((token, tokenIndex) => {
+        const column = document.createElement("div");
+        column.className = "token-column";
+        let html = "<h3>" + tokenNames[tokenIndex] + "</h3>";
+
+        datasets[tokenIndex].forEach(holder => {
+          const address = holder.address;
+          const amount = holder.amount;
+          const percent = ((amount / totals[tokenIndex]) * 100).toFixed(2);
+          const remark = (typeof addressRemarks === "object" && addressRemarks[address]) || "";
+
+          html += `<div class="holder">
+                    <span class="address">${address}</span>
+                    <span class="amount">${amount}</span>
+                    <span class="percent">${percent}%</span>
+                    <span class="remark">${remark}</span>
+                  </div>`;
+        });
+
+        column.innerHTML = html;
+        resultsContainer.appendChild(column);
+      });
+
+      alert("查询完成！");
+    } catch (e) {
+      console.error("查询失败:", e);
+      alert("查询失败，请查看控制台日志");
+    }
+  };
+});
+</script>
 </body>
 <!-- HTML 文档结束 -->
 </html>
