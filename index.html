@@ -31,7 +31,7 @@
 <!-- 页面内嵌 JavaScript 代码开始 -->
 </head>
 <!-- 网页主体开始 -->
-<body>
+<body><button id="exportButton">导出结果为 Excel</button>
 <h2>
    Solana 多代币前 400 持仓地址查询
   </h2>
@@ -289,6 +289,30 @@ window.addEventListener("DOMContentLoaded", () => {
   };
 });
 </script>
-</body>
+<script>
+function exportTablesToExcel() {
+  const tables = document.querySelectorAll("table");
+  if (tables.length === 0) {
+    alert("无表格可导出！");
+    return;
+  }
+
+  let html = `<html><head><meta charset='UTF-8'></head><body>`;
+  html += `<h2>导出时间：${new Date().toLocaleString()}</h2>`;
+
+  tables.forEach((table, i) => {
+    html += `<h3>表格 ${i + 1}</h3>`;
+    html += table.outerHTML;
+  });
+
+  html += `</body></html>`;
+  const blob = new Blob([html], { type: "application/vnd.ms-excel" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "solana-holders-export.xls";
+  a.click();
+}
+document.getElementById("exportButton").onclick = exportTablesToExcel;
+</script></body>
 <!-- HTML 文档结束 -->
 </html>
