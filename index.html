@@ -161,6 +161,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 
+
 <script>
 window.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("queryButton");
@@ -216,7 +217,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
         const sorted = datasets[tokenIndex].sort((a, b) => b.amount - a.amount);
         sorted.forEach((holder, i) => {
-          const address = holder.address || "(无地址)";
+          const address = holder.wallet || "(无地址)";
           const amount = holder.amount || 0;
           const percent = ((amount / totals[tokenIndex]) * 100).toFixed(2);
           const remark = (typeof addressRemarks === "object" && addressRemarks[address]) || "";
@@ -243,6 +244,7 @@ window.addEventListener("DOMContentLoaded", () => {
   };
 });
 </script>
+
 
 
 </body>
