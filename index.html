@@ -159,6 +159,7 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
+
 <script>
 window.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("queryButton");
@@ -183,13 +184,13 @@ window.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // 查询数据和代币名称
+      // 查询数据
       const datasets = await Promise.all(tokens.map(token =>
         fetch(`/api/holders?token=${token}`).then(res => res.json())
       ));
-      const tokenNames = await Promise.all(tokens.map(token =>
-        fetch(`/api/token-name?token=${token}`).then(res => res.text())
-      ));
+
+      // 使用默认代币名称
+      const tokenNames = tokens.map((_, i) => "代币" + (i + 1));
 
       // 计算总持仓
       const totals = datasets.map(data =>
@@ -228,6 +229,7 @@ window.addEventListener("DOMContentLoaded", () => {
   };
 });
 </script>
+
 </body>
 <!-- HTML 文档结束 -->
 </html>
