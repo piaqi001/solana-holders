@@ -160,6 +160,7 @@ window.addEventListener("DOMContentLoaded", () => {
 </script>
 
 
+
 <script>
 window.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("queryButton");
@@ -189,34 +190,47 @@ window.addEventListener("DOMContentLoaded", () => {
         fetch(`/api/holders?token=${token}`).then(res => res.json())
       ));
 
-      // 使用默认代币名称
       const tokenNames = tokens.map((_, i) => "代币" + (i + 1));
 
-      // 计算总持仓
       const totals = datasets.map(data =>
         data.reduce((acc, holder) => acc + (holder.amount || 0), 0)
       );
 
-      // 渲染每列
+      // 渲染每列为表格
       tokens.forEach((token, tokenIndex) => {
         const column = document.createElement("div");
         column.className = "token-column";
-        let html = "<h3>" + tokenNames[tokenIndex] + "</h3>";
 
-        datasets[tokenIndex].forEach(holder => {
-          const address = holder.address;
-          const amount = holder.amount;
+        let html = "<h3>" + tokenNames[tokenIndex] + "</h3>";
+        html += `<table border="1" cellpadding="6" cellspacing="0">
+                   <thead>
+                     <tr>
+                       <th>#</th>
+                       <th>地址</th>
+                       <th>数量</th>
+                       <th>持仓占比</th>
+                       <th>备注</th>
+                     </tr>
+                   </thead>
+                   <tbody>`;
+
+        const sorted = datasets[tokenIndex].sort((a, b) => b.amount - a.amount);
+        sorted.forEach((holder, i) => {
+          const address = holder.address || "(无地址)";
+          const amount = holder.amount || 0;
           const percent = ((amount / totals[tokenIndex]) * 100).toFixed(2);
           const remark = (typeof addressRemarks === "object" && addressRemarks[address]) || "";
 
-          html += `<div class="holder">
-                    <span class="address">${address}</span>
-                    <span class="amount">${amount}</span>
-                    <span class="percent">${percent}%</span>
-                    <span class="remark">${remark}</span>
-                  </div>`;
+          html += `<tr>
+                     <td>${i + 1}</td>
+                     <td>${address}</td>
+                     <td>${amount}</td>
+                     <td>${percent}%</td>
+                     <td>${remark}</td>
+                   </tr>`;
         });
 
+        html += "</tbody></table>";
         column.innerHTML = html;
         resultsContainer.appendChild(column);
       });
@@ -229,6 +243,7 @@ window.addEventListener("DOMContentLoaded", () => {
   };
 });
 </script>
+
 
 </body>
 <!-- HTML 文档结束 -->
