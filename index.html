@@ -164,6 +164,43 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 <script>
+async function getTokenNames(tokens) {
+  const tokenListRes = await fetch("https://cdn.jsdelivr.net/gh/solana-labs/token-list@main/src/tokens/solana.tokenlist.json");
+  const tokenListJson = await tokenListRes.json();
+  const tokenList = tokenListJson.tokens;
+
+  const results = await Promise.all(tokens.map(async (address) => {
+    const found = tokenList.find(t => t.address === address);
+    if (found) {
+      return found.name;
+    } else {
+      try {
+        const res = await fetch("https://mainnet.helius-rpc.com/?api-key=f9e47385-9354-4ee6-8b39-17cb0326bdc6", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: 1,
+            method: "getAsset",
+            params: { id: address }
+          })
+        });
+        const data = await res.json();
+        if (data.result && data.result.content && data.result.content.metadata && data.result.content.metadata.name) {
+          return data.result.content.metadata.name;
+        } else {
+          return "未知代币";
+        }
+      } catch (e) {
+        return "查询失败";
+      }
+    }
+  }));
+
+  return results;
+}
+
+
 window.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("queryButton");
   if (!btn) {
