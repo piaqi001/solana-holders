@@ -146,7 +146,6 @@ window.addEventListener("DOMContentLoaded", () => {
       const tokens = Array.from(inputs).map(i => i.value.trim()).filter(Boolean);
 
       if (tokens.length === 0) {
-        alert("请输入至少一个代币地址！");
         return;
       }
 
@@ -155,14 +154,11 @@ window.addEventListener("DOMContentLoaded", () => {
       ));
 
       console.log("查询结果:", results);
-      alert("查询完成！请打开控制台查看结果");
     } catch (e) {
       console.error("查询时发生错误:", e);
-      alert("查询失败，请查看控制台日志");
     }
   };
-});
-</script>
+});</script>
 <script>
 async function getTokenNames(tokens) {
   const tokenListRes = await fetch("https://cdn.jsdelivr.net/gh/solana-labs/token-list@main/src/tokens/solana.tokenlist.json");
@@ -186,7 +182,7 @@ async function getTokenNames(tokens) {
           })
         });
         const data = await res.json();
-        if (data.result?.content?.metadata?.name) {
+        if (data.result && data.result.content && data.result.content.metadata && data.result.content.metadata.name) {
           return data.result.content.metadata.name;
         } else {
           return "未知代币";
@@ -218,7 +214,6 @@ window.addEventListener("DOMContentLoaded", () => {
       const inputs = document.querySelectorAll("input.token-input");
       const tokens = Array.from(inputs).map(i => i.value.trim()).filter(Boolean);
       if (tokens.length === 0) {
-        alert("请输入至少一个代币地址！");
         return;
       }
 
@@ -243,8 +238,7 @@ window.addEventListener("DOMContentLoaded", () => {
       });
 
       // 渲染主表格
-      const tokenNames = await getTokenNames(tokens);
-  tokens.forEach((token, tokenIndex) => {
+      tokens.forEach((token, tokenIndex) => {
         const column = document.createElement("div");
         column.className = "token-column";
 
@@ -301,9 +295,9 @@ window.addEventListener("DOMContentLoaded", () => {
                           <tr>
                             <th>地址</th>
                             <th>出现次数</th>
-                            <th>${tokenNames[0]}数量</th>
-                            <th>${tokenNames[1]}数量</th>
-                            <th>${tokenNames[2]}数量</th>
+                            <th>代币1数量</th>
+                            <th>代币2数量</th>
+                            <th>代币3数量</th>
                           </tr>
                         </thead>
                         <tbody>`;
@@ -327,11 +321,9 @@ window.addEventListener("DOMContentLoaded", () => {
       
     } catch (e) {
       console.error("查询失败:", e);
-      alert("查询失败，请查看控制台日志");
     }
   };
-});
-</script>
+});</script>
 <script>
 function exportTableToExcel(index) {
   const tables = document.querySelectorAll("table");
@@ -340,7 +332,6 @@ function exportTableToExcel(index) {
   const tokenAddress = inputs[index] ? inputs[index].value : "未知代币地址";
 
   if (!tables[index]) {
-    alert("未找到指定的表格！");
     return;
   }
 
@@ -356,14 +347,12 @@ function exportTableToExcel(index) {
   a.href = URL.createObjectURL(blob);
   a.download = `代币${index + 1}_持仓_${now.replace(/[/: ]/g, "_")}.xls`;
   a.click();
-}
-</script><script>
+}</script><script>
 function exportTableToCSV(index) {
   const tables = document.querySelectorAll("table");
   const inputs = document.querySelectorAll("input.token-input");
   const tokenAddress = inputs[index] ? inputs[index].value : "未知代币地址";
   if (!tables[index]) {
-    alert("未找到指定的表格！");
     return;
   }
 
@@ -388,7 +377,6 @@ function exportTableToCSV(index) {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-}
-</script></body>
+}</script></body>
 <!-- HTML 文档结束 -->
 </html>
