@@ -227,7 +227,7 @@ window.addEventListener("DOMContentLoaded", () => {
         sorted.forEach((holder, i) => {
           const address = holder.wallet || "(无地址)";
           const amount = holder.amount || 0;
-          const percent = ((amount / totals[tokenIndex]) * 100).toFixed(2);
+          const percent = (holder.percent || 0).toFixed(2);  //  正确使用后端返回
           const remark = (typeof addressRemarks === "object" && addressRemarks[address]) || "";
 
           let color = "";
