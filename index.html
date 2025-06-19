@@ -33,9 +33,9 @@
 <!-- 网页主体开始 -->
 <body>
 <div id="exportButtons">
-<button onclick="exportTableToCSV(0)">导出代币1 CSV</button>
-<button onclick="exportTableToCSV(1)">导出代币2 CSV</button>
-<button onclick="exportTableToCSV(2)">导出代币3 CSV</button>
+<button onclick="exportTableToCSV(0)">导出" + tokenNames[0] + " CSV</button>
+<button onclick="exportTableToCSV(1)">导出" + tokenNames[1] + " CSV</button>
+<button onclick="exportTableToCSV(2)">导出" + tokenNames[2] + " CSV</button>
 </div>
 <h2>
    Solana 多代币前 400 持仓地址查询
@@ -295,9 +295,9 @@ window.addEventListener("DOMContentLoaded", () => {
                           <tr>
                             <th>地址</th>
                             <th>出现次数</th>
-                            <th>代币1数量</th>
-                            <th>代币2数量</th>
-                            <th>代币3数量</th>
+                            <th>" + tokenNames[0] + "数量</th>
+                            <th>" + tokenNames[1] + "数量</th>
+                            <th>" + tokenNames[2] + "数量</th>
                           </tr>
                         </thead>
                         <tbody>`;
