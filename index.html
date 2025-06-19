@@ -221,7 +221,7 @@ window.addEventListener("DOMContentLoaded", () => {
         fetch(`/api/holders?token=${token}`).then(res => res.json())
       ));
 
-      const tokenNames = tokens.map((_, i) => "代币" + (i + 1));
+        const tokenNames = await Promise.all(tokens.map(getTokenName));
       const totals = datasets.map(data =>
         data.reduce((acc, holder) => acc + (holder.amount || 0), 0)
       );
