@@ -186,7 +186,7 @@ async function getTokenNames(tokens) {
           })
         });
         const data = await res.json();
-        if (data.result && data.result.content && data.result.content.metadata && data.result.content.metadata.name) {
+        if (data.result?.content?.metadata?.name) {
           return data.result.content.metadata.name;
         } else {
           return "未知代币";
@@ -243,7 +243,8 @@ window.addEventListener("DOMContentLoaded", () => {
       });
 
       // 渲染主表格
-      tokens.forEach((token, tokenIndex) => {
+      const tokenNames = await getTokenNames(tokens);
+  tokens.forEach((token, tokenIndex) => {
         const column = document.createElement("div");
         column.className = "token-column";
 
@@ -300,9 +301,9 @@ window.addEventListener("DOMContentLoaded", () => {
                           <tr>
                             <th>地址</th>
                             <th>出现次数</th>
-                            <th>代币1数量</th>
-                            <th>代币2数量</th>
-                            <th>代币3数量</th>
+                            <th>${tokenNames[0]}数量</th>
+                            <th>${tokenNames[1]}数量</th>
+                            <th>${tokenNames[2]}数量</th>
                           </tr>
                         </thead>
                         <tbody>`;
